@@ -495,111 +495,111 @@ resource "aws_cloudfront_distribution" "default" {
     cloudfront_default_certificate = local.use_default_acm_certificate
   }
 
-  default_cache_behavior {
-    allowed_methods            = var.allowed_methods
-    cached_methods             = var.cached_methods
-    cache_policy_id            = var.cache_policy_id
-    origin_request_policy_id   = var.origin_request_policy_id
-    target_origin_id           = local.origin_id
-    compress                   = var.compress
-    trusted_signers            = var.trusted_signers
-    trusted_key_groups         = var.trusted_key_groups
-    response_headers_policy_id = var.response_headers_policy_id
+//  default_cache_behavior {
+//    allowed_methods            = var.allowed_methods
+//    cached_methods             = var.cached_methods
+//    cache_policy_id            = var.cache_policy_id
+//    origin_request_policy_id   = var.origin_request_policy_id
+//    target_origin_id           = local.origin_id
+//    compress                   = var.compress
+//    trusted_signers            = var.trusted_signers
+//    trusted_key_groups         = var.trusted_key_groups
+//    response_headers_policy_id = var.response_headers_policy_id
+//
+//    dynamic "forwarded_values" {
+//      # If a cache policy or origin request policy is specified,
+//      # we cannot include a `forwarded_values` block at all in the API request.
+//      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
+//      content {
+//        query_string            = var.forward_query_string
+//        query_string_cache_keys = var.query_string_cache_keys
+//        headers                 = var.forward_header_values
+//
+//        cookies {
+//          forward = var.forward_cookies
+//        }
+//      }
+//    }
+//
+//    viewer_protocol_policy = var.viewer_protocol_policy
+//    default_ttl            = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.default_ttl
+//    min_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.min_ttl
+//    max_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.max_ttl
+//
+//    realtime_log_config_arn = var.realtime_log_config_arn
+//
+//    dynamic "lambda_function_association" {
+//      for_each = var.lambda_function_association
+//      content {
+//        event_type   = lambda_function_association.value.event_type
+//        include_body = lookup(lambda_function_association.value, "include_body", null)
+//        lambda_arn   = lambda_function_association.value.lambda_arn
+//      }
+//    }
+//
+//    dynamic "function_association" {
+//      for_each = var.function_association
+//      content {
+//        event_type   = function_association.value.event_type
+//        function_arn = function_association.value.function_arn
+//      }
+//    }
+//  }
 
-    dynamic "forwarded_values" {
-      # If a cache policy or origin request policy is specified,
-      # we cannot include a `forwarded_values` block at all in the API request.
-      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
-      content {
-        query_string            = var.forward_query_string
-        query_string_cache_keys = var.query_string_cache_keys
-        headers                 = var.forward_header_values
-
-        cookies {
-          forward = var.forward_cookies
-        }
-      }
-    }
-
-    viewer_protocol_policy = var.viewer_protocol_policy
-    default_ttl            = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.default_ttl
-    min_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.min_ttl
-    max_ttl                = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.max_ttl
-
-    realtime_log_config_arn = var.realtime_log_config_arn
-
-    dynamic "lambda_function_association" {
-      for_each = var.lambda_function_association
-      content {
-        event_type   = lambda_function_association.value.event_type
-        include_body = lookup(lambda_function_association.value, "include_body", null)
-        lambda_arn   = lambda_function_association.value.lambda_arn
-      }
-    }
-
-    dynamic "function_association" {
-      for_each = var.function_association
-      content {
-        event_type   = function_association.value.event_type
-        function_arn = function_association.value.function_arn
-      }
-    }
-  }
-
-  dynamic "ordered_cache_behavior" {
-    for_each = var.ordered_cache
-
-    content {
-      path_pattern = ordered_cache_behavior.value.path_pattern
-
-      allowed_methods    = ordered_cache_behavior.value.allowed_methods
-      cached_methods     = ordered_cache_behavior.value.cached_methods
-      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
-      compress           = ordered_cache_behavior.value.compress
-      trusted_signers    = ordered_cache_behavior.value.trusted_signers
-      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
-
-      cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
-      origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
-
-      dynamic "forwarded_values" {
-        # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
-        for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
-        content {
-          query_string = ordered_cache_behavior.value.forward_query_string
-          headers      = ordered_cache_behavior.value.forward_header_values
-
-          cookies {
-            forward           = ordered_cache_behavior.value.forward_cookies
-            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
-          }
-        }
-      }
-
-      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
-      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
-      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
-      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
-      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
-
-      dynamic "lambda_function_association" {
-        for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
-        content {
-          event_type   = lambda_function_association.value.event_type
-          include_body = lookup(lambda_function_association.value, "include_body", null)
-          lambda_arn   = lambda_function_association.value.lambda_arn
-        }
-      }
-
-      dynamic "function_association" {
-        for_each = try(ordered_cache_behavior.value.function_association, [])
-        content {
-          event_type   = function_association.value.event_type
-          function_arn = function_association.value.function_arn
-        }
-      }
-    }
-  }
+//  dynamic "ordered_cache_behavior" {
+//    for_each = var.ordered_cache
+//
+//    content {
+//      path_pattern = ordered_cache_behavior.value.path_pattern
+//
+//      allowed_methods    = ordered_cache_behavior.value.allowed_methods
+//      cached_methods     = ordered_cache_behavior.value.cached_methods
+//      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
+//      compress           = ordered_cache_behavior.value.compress
+//      trusted_signers    = ordered_cache_behavior.value.trusted_signers
+//      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
+//
+//      cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
+//      origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
+//
+//      dynamic "forwarded_values" {
+//        # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
+//        for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
+//        content {
+//          query_string = ordered_cache_behavior.value.forward_query_string
+//          headers      = ordered_cache_behavior.value.forward_header_values
+//
+//          cookies {
+//            forward           = ordered_cache_behavior.value.forward_cookies
+//            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
+//          }
+//        }
+//      }
+//
+//      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
+//      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
+//      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
+//      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
+//      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
+//
+//      dynamic "lambda_function_association" {
+//        for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
+//        content {
+//          event_type   = lambda_function_association.value.event_type
+//          include_body = lookup(lambda_function_association.value, "include_body", null)
+//          lambda_arn   = lambda_function_association.value.lambda_arn
+//        }
+//      }
+//
+//      dynamic "function_association" {
+//        for_each = try(ordered_cache_behavior.value.function_association, [])
+//        content {
+//          event_type   = function_association.value.event_type
+//          function_arn = function_association.value.function_arn
+//        }
+//      }
+//    }
+//  }
 
   restrictions {
     geo_restriction {
