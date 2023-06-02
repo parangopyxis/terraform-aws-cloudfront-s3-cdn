@@ -391,26 +391,26 @@ resource "aws_cloudfront_distribution" "default" {
 
   aliases = var.acm_certificate_arn != "" ? concat(var.aliases, var.external_aliases) : []
 
-  dynamic "origin_group" {
-    for_each = var.origin_groups
-    content {
-      origin_id = "${module.this.id}-group[${origin_group.key}]"
-
-      failover_criteria {
-        status_codes = origin_group.value.failover_criteria
-      }
-
-      member {
-        # the following enables the use case of specifying an origin group with the origin created by this module as the
-        # primary origin in the group, prior to the creation of this module.
-        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : local.origin_id
-      }
-
-      member {
-        origin_id = origin_group.value.failover_origin_id
-      }
-    }
-  }
+//  dynamic "origin_group" {
+//    for_each = var.origin_groups
+//    content {
+//      origin_id = "${module.this.id}-group[${origin_group.key}]"
+//
+//      failover_criteria {
+//        status_codes = origin_group.value.failover_criteria
+//      }
+//
+//      member {
+//        # the following enables the use case of specifying an origin group with the origin created by this module as the
+//        # primary origin in the group, prior to the creation of this module.
+//        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : local.origin_id
+//      }
+//
+//      member {
+//        origin_id = origin_group.value.failover_origin_id
+//      }
+//    }
+//  }
 
   origin {
     domain_name = local.bucket_domain_name
@@ -451,42 +451,42 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
-  dynamic "origin" {
-    for_each = var.custom_origins
-    content {
-      domain_name = origin.value.domain_name
-      origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
-      dynamic "custom_header" {
-        for_each = lookup(origin.value, "custom_headers", [])
-        content {
-          name  = custom_header.value["name"]
-          value = custom_header.value["value"]
-        }
-      }
-      custom_origin_config {
-        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
-        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
-        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
-        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
-        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
-        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
-      }
-    }
-  }
+//  dynamic "origin" {
+//    for_each = var.custom_origins
+//    content {
+//      domain_name = origin.value.domain_name
+//      origin_id   = origin.value.origin_id
+//      origin_path = lookup(origin.value, "origin_path", "")
+//      dynamic "custom_header" {
+//        for_each = lookup(origin.value, "custom_headers", [])
+//        content {
+//          name  = custom_header.value["name"]
+//          value = custom_header.value["value"]
+//        }
+//      }
+//      custom_origin_config {
+//        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
+//        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
+//        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
+//        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
+//        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
+//        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+//      }
+//    }
+//  }
 
-  dynamic "origin" {
-    for_each = var.s3_origins
-    content {
-      domain_name = origin.value.domain_name
-      origin_id   = origin.value.origin_id
-      origin_path = lookup(origin.value, "origin_path", "")
-      s3_origin_config {
-        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
-        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
-      }
-    }
-  }
+//  dynamic "origin" {
+//    for_each = var.s3_origins
+//    content {
+//      domain_name = origin.value.domain_name
+//      origin_id   = origin.value.origin_id
+//      origin_path = lookup(origin.value, "origin_path", "")
+//      s3_origin_config {
+//        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
+//        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
+//      }
+//    }
+//  }
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
