@@ -500,26 +500,26 @@ resource "aws_cloudfront_distribution" "default" {
     cached_methods             = var.cached_methods
     cache_policy_id            = var.cache_policy_id
     origin_request_policy_id   = var.origin_request_policy_id
-    target_origin_id           = "this.origin.id"//local.origin_id
+    target_origin_id           = local.origin_id
     compress                   = var.compress
     trusted_signers            = var.trusted_signers
     trusted_key_groups         = var.trusted_key_groups
     response_headers_policy_id = var.response_headers_policy_id
 
-    dynamic "forwarded_values" {
-      # If a cache policy or origin request policy is specified,
-      # we cannot include a `forwarded_values` block at all in the API request.
-      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
-      content {
-        query_string            = var.forward_query_string
-        query_string_cache_keys = var.query_string_cache_keys
-        headers                 = var.forward_header_values
-
-        cookies {
-          forward = var.forward_cookies
-        }
-      }
-    }
+//    dynamic "forwarded_values" {
+//      # If a cache policy or origin request policy is specified,
+//      # we cannot include a `forwarded_values` block at all in the API request.
+//      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
+//      content {
+//        query_string            = var.forward_query_string
+//        query_string_cache_keys = var.query_string_cache_keys
+//        headers                 = var.forward_header_values
+//
+//        cookies {
+//          forward = var.forward_cookies
+//        }
+//      }
+//    }
 
     viewer_protocol_policy = var.viewer_protocol_policy
     default_ttl            = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.default_ttl
@@ -528,22 +528,22 @@ resource "aws_cloudfront_distribution" "default" {
 
     realtime_log_config_arn = var.realtime_log_config_arn
 
-    dynamic "lambda_function_association" {
-      for_each = var.lambda_function_association
-      content {
-        event_type   = lambda_function_association.value.event_type
-        include_body = lookup(lambda_function_association.value, "include_body", null)
-        lambda_arn   = lambda_function_association.value.lambda_arn
-      }
-    }
+//    dynamic "lambda_function_association" {
+//      for_each = var.lambda_function_association
+//      content {
+//        event_type   = lambda_function_association.value.event_type
+//        include_body = lookup(lambda_function_association.value, "include_body", null)
+//        lambda_arn   = lambda_function_association.value.lambda_arn
+//      }
+//    }
 
-    dynamic "function_association" {
-      for_each = var.function_association
-      content {
-        event_type   = function_association.value.event_type
-        function_arn = function_association.value.function_arn
-      }
-    }
+//    dynamic "function_association" {
+//      for_each = var.function_association
+//      content {
+//        event_type   = function_association.value.event_type
+//        function_arn = function_association.value.function_arn
+//      }
+//    }
   }
 
 //  dynamic "ordered_cache_behavior" {
