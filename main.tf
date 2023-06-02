@@ -500,7 +500,7 @@ resource "aws_cloudfront_distribution" "default" {
     cached_methods             = var.cached_methods
     cache_policy_id            = var.cache_policy_id
     origin_request_policy_id   = var.origin_request_policy_id
-    target_origin_id           = local.origin_id
+    target_origin_id           = "this.origin.id"//local.origin_id
     compress                   = var.compress
     trusted_signers            = var.trusted_signers
     trusted_key_groups         = var.trusted_key_groups
