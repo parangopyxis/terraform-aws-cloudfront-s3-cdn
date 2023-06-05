@@ -391,26 +391,26 @@ resource "aws_cloudfront_distribution" "default" {
 
   aliases = var.acm_certificate_arn != "" ? concat(var.aliases, var.external_aliases) : []
 
-//  dynamic "origin_group" {
-//    for_each = var.origin_groups
-//    content {
-//      origin_id = "${module.this.id}-group[${origin_group.key}]"
-//
-//      failover_criteria {
-//        status_codes = origin_group.value.failover_criteria
-//      }
-//
-//      member {
-//        # the following enables the use case of specifying an origin group with the origin created by this module as the
-//        # primary origin in the group, prior to the creation of this module.
-//        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : local.origin_id
-//      }
-//
-//      member {
-//        origin_id = origin_group.value.failover_origin_id
-//      }
-//    }
-//  }
+  dynamic "origin_group" {
+    for_each = var.origin_groups
+    content {
+      origin_id = "${module.this.id}-group[${origin_group.key}]"
+
+      failover_criteria {
+        status_codes = origin_group.value.failover_criteria
+      }
+
+      member {
+        # the following enables the use case of specifying an origin group with the origin created by this module as the
+        # primary origin in the group, prior to the creation of this module.
+        origin_id = try(length(origin_group.value.primary_origin_id), 0) > 0 ? origin_group.value.primary_origin_id : local.origin_id
+      }
+
+      member {
+        origin_id = origin_group.value.failover_origin_id
+      }
+    }
+  }
 
   origin {
     domain_name = local.bucket_domain_name
@@ -451,42 +451,42 @@ resource "aws_cloudfront_distribution" "default" {
     }
   }
 
-//  dynamic "origin" {
-//    for_each = var.custom_origins
-//    content {
-//      domain_name = origin.value.domain_name
-//      origin_id   = origin.value.origin_id
-//      origin_path = lookup(origin.value, "origin_path", "")
-//      dynamic "custom_header" {
-//        for_each = lookup(origin.value, "custom_headers", [])
-//        content {
-//          name  = custom_header.value["name"]
-//          value = custom_header.value["value"]
-//        }
-//      }
-//      custom_origin_config {
-//        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
-//        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
-//        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
-//        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
-//        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
-//        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
-//      }
-//    }
-//  }
+  dynamic "origin" {
+    for_each = var.custom_origins
+    content {
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = lookup(origin.value, "origin_path", "")
+      dynamic "custom_header" {
+        for_each = lookup(origin.value, "custom_headers", [])
+        content {
+          name  = custom_header.value["name"]
+          value = custom_header.value["value"]
+        }
+      }
+      custom_origin_config {
+        http_port                = lookup(origin.value.custom_origin_config, "http_port", 80)
+        https_port               = lookup(origin.value.custom_origin_config, "https_port", 443)
+        origin_protocol_policy   = lookup(origin.value.custom_origin_config, "origin_protocol_policy", "https-only")
+        origin_ssl_protocols     = lookup(origin.value.custom_origin_config, "origin_ssl_protocols", ["TLSv1.2"])
+        origin_keepalive_timeout = lookup(origin.value.custom_origin_config, "origin_keepalive_timeout", 60)
+        origin_read_timeout      = lookup(origin.value.custom_origin_config, "origin_read_timeout", 60)
+      }
+    }
+  }
 
-//  dynamic "origin" {
-//    for_each = var.s3_origins
-//    content {
-//      domain_name = origin.value.domain_name
-//      origin_id   = origin.value.origin_id
-//      origin_path = lookup(origin.value, "origin_path", "")
-//      s3_origin_config {
-//        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
-//        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
-//      }
-//    }
-//  }
+  dynamic "origin" {
+    for_each = var.s3_origins
+    content {
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = lookup(origin.value, "origin_path", "")
+      s3_origin_config {
+        # the following enables specifying the origin_access_identity used by the origin created by this module, prior to the module's creation:
+        origin_access_identity = try(length(origin.value.s3_origin_config.origin_access_identity), 0) > 0 ? origin.value.s3_origin_config.origin_access_identity : local.cf_access.path
+      }
+    }
+  }
 
   viewer_certificate {
     acm_certificate_arn            = var.acm_certificate_arn
@@ -506,20 +506,20 @@ resource "aws_cloudfront_distribution" "default" {
     trusted_key_groups         = var.trusted_key_groups
     response_headers_policy_id = var.response_headers_policy_id
 
-//    dynamic "forwarded_values" {
-//      # If a cache policy or origin request policy is specified,
-//      # we cannot include a `forwarded_values` block at all in the API request.
-//      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
-//      content {
-//        query_string            = var.forward_query_string
-//        query_string_cache_keys = var.query_string_cache_keys
-//        headers                 = var.forward_header_values
-//
-//        cookies {
-//          forward = var.forward_cookies
-//        }
-//      }
-//    }
+    dynamic "forwarded_values" {
+      # If a cache policy or origin request policy is specified,
+      # we cannot include a `forwarded_values` block at all in the API request.
+      for_each = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? [] : [true]
+      content {
+        query_string            = var.forward_query_string
+        query_string_cache_keys = var.query_string_cache_keys
+        headers                 = var.forward_header_values
+
+        cookies {
+          forward = var.forward_cookies
+        }
+      }
+    }
 
     viewer_protocol_policy = var.viewer_protocol_policy
     default_ttl            = (var.cache_policy_id != null || var.origin_request_policy_id != null) ? 0 : var.default_ttl
@@ -528,78 +528,78 @@ resource "aws_cloudfront_distribution" "default" {
 
     realtime_log_config_arn = var.realtime_log_config_arn
 
-//    dynamic "lambda_function_association" {
-//      for_each = var.lambda_function_association
-//      content {
-//        event_type   = lambda_function_association.value.event_type
-//        include_body = lookup(lambda_function_association.value, "include_body", null)
-//        lambda_arn   = lambda_function_association.value.lambda_arn
-//      }
-//    }
+    dynamic "lambda_function_association" {
+      for_each = var.lambda_function_association
+      content {
+        event_type   = lambda_function_association.value.event_type
+        include_body = lookup(lambda_function_association.value, "include_body", null)
+        lambda_arn   = lambda_function_association.value.lambda_arn
+      }
+    }
 
-//    dynamic "function_association" {
-//      for_each = var.function_association
-//      content {
-//        event_type   = function_association.value.event_type
-//        function_arn = function_association.value.function_arn
-//      }
-//    }
+    dynamic "function_association" {
+      for_each = var.function_association
+      content {
+        event_type   = function_association.value.event_type
+        function_arn = function_association.value.function_arn
+      }
+    }
   }
 
-//  dynamic "ordered_cache_behavior" {
-//    for_each = var.ordered_cache
-//
-//    content {
-//      path_pattern = ordered_cache_behavior.value.path_pattern
-//
-//      allowed_methods    = ordered_cache_behavior.value.allowed_methods
-//      cached_methods     = ordered_cache_behavior.value.cached_methods
-//      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
-//      compress           = ordered_cache_behavior.value.compress
-//      trusted_signers    = ordered_cache_behavior.value.trusted_signers
-//      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
-//
-//      cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
-//      origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
-//
-//      dynamic "forwarded_values" {
-//        # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
-//        for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
-//        content {
-//          query_string = ordered_cache_behavior.value.forward_query_string
-//          headers      = ordered_cache_behavior.value.forward_header_values
-//
-//          cookies {
-//            forward           = ordered_cache_behavior.value.forward_cookies
-//            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
-//          }
-//        }
-//      }
-//
-//      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
-//      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
-//      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
-//      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
-//      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
-//
-//      dynamic "lambda_function_association" {
-//        for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
-//        content {
-//          event_type   = lambda_function_association.value.event_type
-//          include_body = lookup(lambda_function_association.value, "include_body", null)
-//          lambda_arn   = lambda_function_association.value.lambda_arn
-//        }
-//      }
-//
-//      dynamic "function_association" {
-//        for_each = try(ordered_cache_behavior.value.function_association, [])
-//        content {
-//          event_type   = function_association.value.event_type
-//          function_arn = function_association.value.function_arn
-//        }
-//      }
-//    }
-//  }
+  dynamic "ordered_cache_behavior" {
+    for_each = var.ordered_cache
+
+    content {
+      path_pattern = ordered_cache_behavior.value.path_pattern
+
+      allowed_methods    = ordered_cache_behavior.value.allowed_methods
+      cached_methods     = ordered_cache_behavior.value.cached_methods
+      target_origin_id   = ordered_cache_behavior.value.target_origin_id == "" ? local.origin_id : ordered_cache_behavior.value.target_origin_id
+      compress           = ordered_cache_behavior.value.compress
+      trusted_signers    = ordered_cache_behavior.value.trusted_signers
+      trusted_key_groups = ordered_cache_behavior.value.trusted_key_groups
+
+      cache_policy_id          = ordered_cache_behavior.value.cache_policy_id
+      origin_request_policy_id = ordered_cache_behavior.value.origin_request_policy_id
+
+      dynamic "forwarded_values" {
+        # If a cache policy or origin request policy is specified, we cannot include a `forwarded_values` block at all in the API request
+        for_each = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? [] : [true]
+        content {
+          query_string = ordered_cache_behavior.value.forward_query_string
+          headers      = ordered_cache_behavior.value.forward_header_values
+
+          cookies {
+            forward           = ordered_cache_behavior.value.forward_cookies
+            whitelisted_names = ordered_cache_behavior.value.forward_cookies_whitelisted_names
+          }
+        }
+      }
+
+      viewer_protocol_policy     = ordered_cache_behavior.value.viewer_protocol_policy
+      default_ttl                = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.default_ttl
+      min_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.min_ttl
+      max_ttl                    = (ordered_cache_behavior.value.cache_policy_id != null || ordered_cache_behavior.value.origin_request_policy_id != null) ? 0 : ordered_cache_behavior.value.max_ttl
+      response_headers_policy_id = ordered_cache_behavior.value.response_headers_policy_id
+
+      dynamic "lambda_function_association" {
+        for_each = try(ordered_cache_behavior.value.lambda_function_association, [])
+        content {
+          event_type   = lambda_function_association.value.event_type
+          include_body = lookup(lambda_function_association.value, "include_body", null)
+          lambda_arn   = lambda_function_association.value.lambda_arn
+        }
+      }
+
+      dynamic "function_association" {
+        for_each = try(ordered_cache_behavior.value.function_association, [])
+        content {
+          event_type   = function_association.value.event_type
+          function_arn = function_association.value.function_arn
+        }
+      }
+    }
+  }
 
   restrictions {
     geo_restriction {
