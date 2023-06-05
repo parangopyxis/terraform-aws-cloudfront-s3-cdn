@@ -11,7 +11,7 @@ locals {
 
   create_cloudfront_origin_access_identity = local.enabled && length(compact([var.cloudfront_origin_access_identity_iam_arn])) == 0 # "" or null
 
-  origin_id   = try(module.this.id, substr(md5("MOCKEDID"),0,7))
+  origin_id   = module.this.id != "" ? module.this.id : substr(md5("MOCKEDID"),0,7)
   origin_path = coalesce(var.origin_path, "/")
   # Collect the information for whichever S3 bucket we are using as the origin
   origin_bucket_placeholder = {
