@@ -450,12 +450,13 @@ variable "custom_origins" {
 
 variable "s3_origins" {
   type = list(object({
-    domain_name = string
-    origin_id   = string
-    origin_path = string
-    s3_origin_config = object({
-      origin_access_identity = string
-    })
+    domain_name    = string
+    origin_id      = string
+    origin_path    = optional(string, "")
+    origin_access_control_id = optional(string, "") # <-- agregar esto
+    s3_origin_config = optional(object({
+      origin_access_identity = optional(string, "")
+    }), { origin_access_identity = "" })
   }))
   default     = []
   description = <<-EOT
@@ -685,4 +686,26 @@ variable "enable_origin_bucket_creation" {
   type        = bool
   default     = true
   description = "Whether to enable the creation of a default s3 origin or not"
+}
+
+variable "origin_access_type" {
+  type        = string
+  default     = "origin_access_identity"
+  description = "Type of origin access. Valid values: `origin_access_identity`, `origin_access_control`."
+  validation {
+    condition     = contains(["origin_access_identity", "origin_access_control"], var.origin_access_type)
+    error_message = "Valid values are `origin_access_identity` or `origin_access_control`."
+  }
+}
+
+variable "cloudfront_origin_access_control_id" {
+  type        = string
+  default     = ""
+  description = "Existing CloudFront Origin Access Control ID. Used when `origin_access_type = origin_access_control` and you want to reuse an existing OAC instead of creating a new one."
+}
+
+variable "origin_access_control_signing_behavior" {
+  type        = string
+  default     = "always"
+  description = "Signing behavior for OAC. Valid values: `always`, `never`, `no-override`."
 }
