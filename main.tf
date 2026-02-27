@@ -155,7 +155,7 @@ resource "random_password" "referer" {
 data "aws_iam_policy_document" "s3_origin" {
   count = local.s3_origin_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  override_policy_documents = local.override_policy != "" ? [local.override_policy] : []
 
   dynamic "statement" {
     for_each = local.origin_access_control_enabled ? [1] : []
@@ -209,7 +209,8 @@ data "aws_iam_policy_document" "s3_origin" {
 data "aws_iam_policy_document" "s3_website_origin" {
   count = local.website_enabled ? 1 : 0
 
-  override_json = local.override_policy
+  #override_json = local.override_policy
+  override_policy_documents = local.override_policy != "" ? [local.override_policy] : []
 
   statement {
     sid = "S3GetObjectForCloudFront"
@@ -302,7 +303,7 @@ resource "aws_s3_bucket" "origin" {
   count = local.create_s3_origin_bucket ? 1 : 0
 
   bucket        = module.origin_label.id
-  acl           = "private"
+  #acl           = "private"
   tags          = module.origin_label.tags
   force_destroy = var.origin_force_destroy
 
@@ -350,6 +351,14 @@ resource "aws_s3_bucket" "origin" {
       max_age_seconds = var.cors_max_age_seconds
     }
   }
+}
+
+resource "aws_s3_bucket_acl" "origin" {
+  count  = local.create_s3_origin_bucket ? 1 : 0
+  bucket = aws_s3_bucket.origin[0].id
+  acl    = "private"
+
+  depends_on = [aws_s3_bucket_ownership_controls.origin]
 }
 
 resource "aws_s3_bucket_public_access_block" "origin" {
